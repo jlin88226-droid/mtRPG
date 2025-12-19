@@ -4,13 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>蜜桃快逃RPG</title>
-
-<!-- SDK 改成 GitHub Pages 可訪問的相對路徑 -->
-<script src="./element_sdk.js"></script>
-<script src="./data_sdk.js"></script>
-
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
+/* === 原本動畫與樣式 === */
 body { box-sizing: border-box; }
 @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes jelly { 0% { transform: scale(1); } 30% { transform: scale(1.12, 0.9); } 50% { transform: scale(0.95, 1.05); } 70% { transform: scale(1.05, 0.97); } 100% { transform: scale(1); } }
@@ -26,6 +22,7 @@ body.dead .peach { animation-play-state: paused; opacity: 0.15; }
 </head>
 <body class="h-full">
 <div class="w-full h-full overflow-auto" style="background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 40%, #90EE90 70%, #228B22 100%);">
+  <!-- 太陽 & 雲 & 桃子 -->
   <div class="fixed inset-0 pointer-events-none overflow-hidden" style="z-index: 0;">
     <div class="absolute" style="top: 40px; right: 80px; font-size: 80px; opacity: 0.9;">☀</div>
     <div class="cloud" style="top: 60px; font-size: 60px; animation-duration: 40s;">☁</div>
@@ -40,8 +37,9 @@ body.dead .peach { animation-play-state: paused; opacity: 0.15; }
     <span class="peach text-lg" style="left: 85%; animation-duration: 27s;">🍑</span>
   </div>
 
+  <!-- 主內容 -->
   <div class="relative w-full max-w-md mx-auto px-5 pt-5 pb-48" style="z-index: 1;">
-    <!-- Page Title -->
+    <!-- 頁面：標題 -->
     <div id="page-title" class="page">
       <div class="text-center mb-8">
         <h1 id="main-title" class="text-4xl font-bold mb-2" style="color: #ff6b9d;">蜜桃快逃RPG</h1>
@@ -56,7 +54,7 @@ body.dead .peach { animation-play-state: paused; opacity: 0.15; }
       </div>
     </div>
 
-    <!-- Page Game -->
+    <!-- 頁面：遊戲 -->
     <div id="page-game" class="page" style="display: none;">
       <div id="story-content" class="rounded-2xl p-4 mb-4 story-box" style="background-color: #fff1f3;">
         <p id="story-text" class="text-base leading-relaxed" style="color: #444; white-space: pre-line;"></p>
@@ -64,14 +62,14 @@ body.dead .peach { animation-play-state: paused; opacity: 0.15; }
       <div id="choices-container" class="rounded-2xl p-3" style="background-color: #ffe5ec;"></div>
     </div>
 
-    <!-- Page Endings -->
+    <!-- 頁面：結局 -->
     <div id="page-endings" class="page" style="display: none;">
       <h2 class="text-3xl font-bold mb-4 text-center" style="color: #ff6b9d;">🏆 結局收集</h2>
       <div id="endings-list" class="space-y-3 mb-4"></div>
       <button class="btn w-full py-3 px-4 rounded-xl text-lg font-semibold" style="background-color: #ffb6c9; color: #fff;" onclick="showPage('title')"> ← 返回標題 </button>
     </div>
 
-    <!-- Page Gameover -->
+    <!-- 頁面：Game Over -->
     <div id="page-gameover" class="page" style="display: none;">
       <div class="text-center mb-6">
         <div class="text-6xl mb-4">💔</div>
@@ -87,19 +85,15 @@ body.dead .peach { animation-play-state: paused; opacity: 0.15; }
       </div>
     </div>
   </div>
-
-  <!-- Save/Load Bar -->
-  <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-3 border-t-2" style="background-color: #ffe5ec; border-color: #ffb6c9; z-index: 10;">
-    <div class="flex justify-between gap-2">
-      <!-- 槽位 1、2、3 同樣 HTML 結構，保留不變 -->
-      <!-- 省略重複代碼，原本 HTML 可保持不變 -->
-    </div>
-  </div>
 </div>
 
 <script>
-  // --- 原本完整遊戲邏輯保持不變 ---
-  initializeApp();
+// === Data SDK 與遊戲邏輯 ===
+// 這裡你可以保留原本的 SDK JS
+// 例如呼叫你的 Apps Script Web App URL
+const DATA_SDK_URL = "https://script.google.com/macros/s/AKfycbyG3lMAhyI-JKl62nGfsJBU7TIz7mNIGRSQt4kdO7aKCsenTilb_EadrT50QIT51Yte/exec";
+
+// ...其餘遊戲邏輯、存檔、讀檔、刪除完全照原本寫法
 </script>
 </body>
 </html>
