@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-Hant" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>蜜桃快逃RPG</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { box-sizing: border-box; }
+    @keyframes popIn { from { transform: scale(.95); opacity:0 } to { transform: scale(1); opacity:1 } }
+    @keyframes jelly { 0%{transform:scale(1)}30%{transform:scale(1.12,.9)}50%{transform:scale(.95,1.05)}70%{transform:scale(1.05,.97)}100%{transform:scale(1)} }
+    @keyframes peachFloat { from{transform:translateY(100%)} to{transform:translateY(-120px) rotate(360deg)} }
+    @keyframes cloudFloat { from{transform:translateX(100vw)} to{transform:translateX(-200px)} }
+    .story-box{animation:popIn .35s ease-out}
+    .btn:active{animation:jelly .45s}
+    .peach{position:absolute;opacity:.35;animation:peachFloat linear infinite;pointer-events:none}
+    body.dead .peach{animation-play-state:paused;opacity:.15}
+    .cloud{position:absolute;opacity:.7;animation:cloudFloat linear infinite;pointer-events:none}
+  </style>
+</head>
+
+<body class="h-full">
+
+<!-- ================= 背景 ================= -->
+<div class="w-full h-full overflow-auto" style="background:linear-gradient(to bottom,#87CEEB 0%,#E0F6FF 40%,#90EE90 70%,#228B22 100%)">
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute" style="top:40px;right:80px;font-size:80px;">☀</div>
+    <div class="cloud" style="top:60px;font-size:60px;animation-duration:40s;">☁</div>
+    <span class="peach text-xl" style="left:10%;animation-duration:18s;">🍑</span>
+    <span class="peach text-2xl" style="left:50%;animation-duration:22s;">🍑</span>
+    <span class="peach text-lg" style="left:80%;animation-duration:26s;">🍑</span>
+  </div>
+
+<!-- ================= 主畫面 ================= -->
+<div class="relative w-full max-w-md mx-auto px-5 pt-5 pb-48">
+
+<!-- 標題 -->
+<div id="page-title" class="page">
+  <h1 class="text-4xl font-bold text-center mb-4 text-pink-500">蜜桃快逃 RPG</h1>
+  <button class="btn w-full py-3 rounded-xl bg-pink-300 text-white" onclick="startGame()">🎮 開始冒險</button>
+  <button class="btn w-full py-3 mt-2 rounded-xl bg-pink-300 text-white" onclick="showPage('endings')">📖 查看結局</button>
+</div>
+
+<!-- 遊戲 -->
+<div id="page-game" class="page hidden">
+  <div class="story-box bg-pink-100 p-4 rounded-xl mb-3">
+    <p id="story-text"></p>
+  </div>
+  <div id="choices-container"></div>
+</div>
+
+<!-- Game Over -->
+<div id="page-gameover" class="page hidden">
+  <h2 id="ending-title" class="text-3xl font-bold text-center text-pink-500"></h2>
+  <p id="ending-desc" class="bg-pink-100 p-4 rounded-xl mt-3"></p>
+  <button class="btn w-full py-3 mt-3 bg-pink-300 text-white" onclick="startGame()">🔄 重新開始</button>
+</div>
+
+<!-- Endings -->
+<div id="page-endings" class="page hidden">
+  <h2 class="text-3xl font-bold text-center text-pink-500 mb-3">🏆 結局</h2>
+  <div id="endings-list"></div>
+  <button class="btn w-full py-3 mt-3 bg-pink-300 text-white" onclick="showPage('title')">← 返回</button>
+</div>
+
+</div>
+
+<!-- ================= 底部存檔 ================= -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-3 bg-pink-100">
+  <div class="flex gap-2">
+    <button class="btn flex-1 bg-pink-300 text-white py-2" onclick="saveGame(1)">💾 存檔</button>
+    <button class="btn flex-1 bg-pink-300 text-white py-2" onclick="loadGame(1)">📂 讀檔</button>
+  </div>
+</div>
+
+</div>
+
+<!-- ================= JS ================= -->
+<script>
+/* ========= API 設定 ========= */
+const API_URL =
+"https://script.google.com/macros/s/AKfycbwmbU7o6QVyVhfE-6lMP0enrrXpi5V4pZt6l-Q6VKRPB21Ct9x7n3H7_AD5R1HUtIcn/exec";
+
+/* ========= dataSdk ========= */
+window.dataSdk = {
+  _data: [],
+  async init(handler){
+    const res = await fetch(API_URL + "?action=list");
+    this._data = await res.json();
+    handler.onDataChanged(this._data);
+    return {isOk:true};
+  },
+  async create(payload){
+    return fetch(API_URL,{
+      method:"POST",
+      body:JSON.stringify({action:"create",payload})
+    }).then(r=>r.json());
+  },
+  async update(payload){
+    return fetch(API_URL,{
+      method:"POST",
+      body:JSON.stringify({action:"update",payload})
+    }).then(r=>r.json());
+  }
+};
+
+/* ========= 遊戲資料 ========= */
+const scenes = {
+  start:{
+    text:"🍑 你是一顆水蜜桃，被盯上了！",
+    choices:[
+      {text:"逃跑",next:"escape"},
+      {text:"裝死",next:"dead"}
+    ]
+  },
+  escape:{ text:"🎉 你逃走了！", ending:{title:"成功逃生",desc:"恭喜"} },
+  dead:{ text:"💀 被吃掉了", ending:{title:"失敗",desc:"下次加油"} }
+};
+
+let currentScene="start";
+let saveSlots=new Map();
+
+/* ========= UI ========= */
+function showPage(p){
+  document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));
+  document.getElementById("page-"+p).classList.remove("hidden");
+}
+
+function startGame(){
+  currentScene="start";
+  showScene(currentScene);
+  showPage("game");
+}
+
+function showScene(id){
+  const s=scenes[id];
+  document.getElementById("story-text").textContent=s.text;
+  const c=document.getElementById("choices-container");
+  c.innerHTML="";
+  if(s.ending){
+    document.getElementById("ending-title").textContent=s.ending.title;
+    document.getElementById("ending-desc").textContent=s.ending.desc;
+    showPage("gameover");
+    return;
+  }
+  s.choices.forEach(ch=>{
+    const b=document.createElement("button");
+    b.className="btn w-full py-3 mt-2 bg-pink-300 text-white";
+    b.textContent=ch.text;
+    b.onclick=()=>showScene(ch.next);
+    c.appendChild(b);
+  });
+}
+
+/* ========= 存檔 ========= */
+const handler={onDataChanged(data){
+  data.forEach(d=>saveSlots.set(d.slot_id,d));
+}};
+
+dataSdk.init(handler);
+
+async function saveGame(slot){
+  await dataSdk.create({
+    slot_id:"slot_"+slot,
+    current_scene:currentScene,
+    saved_at:Date.now()
+  });
+  alert("已存檔");
+}
+
+function loadGame(slot){
+  const d=saveSlots.get("slot_"+slot);
+  if(!d) return alert("沒有存檔");
+  showScene(d.current_scene);
+  showPage("game");
+}
+</script>
+
+</body>
+</html>
