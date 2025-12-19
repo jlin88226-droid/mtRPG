@@ -6,7 +6,6 @@
 <title>蜜桃快逃RPG</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-/* === 原本動畫與樣式 === */
 body { box-sizing: border-box; }
 @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes jelly { 0% { transform: scale(1); } 30% { transform: scale(1.12, 0.9); } 50% { transform: scale(0.95, 1.05); } 70% { transform: scale(1.05, 0.97); } 100% { transform: scale(1); } }
@@ -22,7 +21,6 @@ body.dead .peach { animation-play-state: paused; opacity: 0.15; }
 </head>
 <body class="h-full">
 <div class="w-full h-full overflow-auto" style="background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 40%, #90EE90 70%, #228B22 100%);">
-  <!-- 太陽 & 雲 & 桃子 -->
   <div class="fixed inset-0 pointer-events-none overflow-hidden" style="z-index: 0;">
     <div class="absolute" style="top: 40px; right: 80px; font-size: 80px; opacity: 0.9;">☀</div>
     <div class="cloud" style="top: 60px; font-size: 60px; animation-duration: 40s;">☁</div>
@@ -37,9 +35,8 @@ body.dead .peach { animation-play-state: paused; opacity: 0.15; }
     <span class="peach text-lg" style="left: 85%; animation-duration: 27s;">🍑</span>
   </div>
 
-  <!-- 主內容 -->
   <div class="relative w-full max-w-md mx-auto px-5 pt-5 pb-48" style="z-index: 1;">
-    <!-- 頁面：標題 -->
+    <!-- 標題頁面 -->
     <div id="page-title" class="page">
       <div class="text-center mb-8">
         <h1 id="main-title" class="text-4xl font-bold mb-2" style="color: #ff6b9d;">蜜桃快逃RPG</h1>
@@ -54,7 +51,7 @@ body.dead .peach { animation-play-state: paused; opacity: 0.15; }
       </div>
     </div>
 
-    <!-- 頁面：遊戲 -->
+    <!-- 遊戲頁面 -->
     <div id="page-game" class="page" style="display: none;">
       <div id="story-content" class="rounded-2xl p-4 mb-4 story-box" style="background-color: #fff1f3;">
         <p id="story-text" class="text-base leading-relaxed" style="color: #444; white-space: pre-line;"></p>
@@ -62,14 +59,14 @@ body.dead .peach { animation-play-state: paused; opacity: 0.15; }
       <div id="choices-container" class="rounded-2xl p-3" style="background-color: #ffe5ec;"></div>
     </div>
 
-    <!-- 頁面：結局 -->
+    <!-- 結局頁面 -->
     <div id="page-endings" class="page" style="display: none;">
       <h2 class="text-3xl font-bold mb-4 text-center" style="color: #ff6b9d;">🏆 結局收集</h2>
       <div id="endings-list" class="space-y-3 mb-4"></div>
       <button class="btn w-full py-3 px-4 rounded-xl text-lg font-semibold" style="background-color: #ffb6c9; color: #fff;" onclick="showPage('title')"> ← 返回標題 </button>
     </div>
 
-    <!-- 頁面：Game Over -->
+    <!-- Game Over -->
     <div id="page-gameover" class="page" style="display: none;">
       <div class="text-center mb-6">
         <div class="text-6xl mb-4">💔</div>
@@ -87,13 +84,79 @@ body.dead .peach { animation-play-state: paused; opacity: 0.15; }
   </div>
 </div>
 
-<script>
-// === Data SDK 與遊戲邏輯 ===
-// 這裡你可以保留原本的 SDK JS
-// 例如呼叫你的 Apps Script Web App URL
-const DATA_SDK_URL = "https://script.google.com/macros/s/AKfycbyG3lMAhyI-JKl62nGfsJBU7TIz7mNIGRSQt4kdO7aKCsenTilb_EadrT50QIT51Yte/exec";
+<!-- 存檔槽位 -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-3 border-t-2" style="background-color: #ffe5ec; border-color: #ffb6c9; z-index: 10;">
+  <div class="flex justify-between gap-2">
+    <div class="flex-1 rounded-xl p-2 text-center relative" style="background-color: #fff1f3;">
+      <button id="save-btn-1" class="w-full py-2 px-2 my-1 rounded-lg text-sm font-semibold border-none" style="background-color: #ffb6c9; color: #fff;" onclick="saveGame(1)"> 💾 存檔 </button>
+      <button id="load-btn-1" class="w-full py-2 px-2 my-1 rounded-lg text-sm font-semibold border-none" style="background-color: #ffb6c9; color: #fff;" onclick="loadGame(1)"> 📂 讀檔 </button>
+      <div class="flex justify-center items-center gap-1 mt-1">
+        <div id="save-status-1" class="text-xs" style="color: #555;">槽位 1</div>
+        <button id="delete-btn-1" class="text-xs text-red-400 hover:text-red-600 font-bold px-1" style="display:none;" onclick="deleteGame(1)">❌</button>
+      </div>
+    </div>
+    <div class="flex-1 rounded-xl p-2 text-center relative" style="background-color: #fff1f3;">
+      <button id="save-btn-2" class="w-full py-2 px-2 my-1 rounded-lg text-sm font-semibold border-none" style="background-color: #ffb6c9; color: #fff;" onclick="saveGame(2)"> 💾 存檔 </button>
+      <button id="load-btn-2" class="w-full py-2 px-2 my-1 rounded-lg text-sm font-semibold border-none" style="background-color: #ffb6c9; color: #fff;" onclick="loadGame(2)"> 📂 讀檔 </button>
+      <div class="flex justify-center items-center gap-1 mt-1">
+        <div id="save-status-2" class="text-xs" style="color: #555;">槽位 2</div>
+        <button id="delete-btn-2" class="text-xs text-red-400 hover:text-red-600 font-bold px-1" style="display:none;" onclick="deleteGame(2)">❌</button>
+      </div>
+    </div>
+    <div class="flex-1 rounded-xl p-2 text-center relative" style="background-color: #fff1f3;">
+      <button id="save-btn-3" class="w-full py-2 px-2 my-1 rounded-lg text-sm font-semibold border-none" style="background-color: #ffb6c9; color: #fff;" onclick="saveGame(3)"> 💾 存檔 </button>
+      <button id="load-btn-3" class="w-full py-2 px-2 my-1 rounded-lg text-sm font-semibold border-none" style="background-color: #ffb6c9; color: #fff;" onclick="loadGame(3)"> 📂 讀檔 </button>
+      <div class="flex justify-center items-center gap-1 mt-1">
+        <div id="save-status-3" class="text-xs" style="color: #555;">槽位 3</div>
+        <button id="delete-btn-3" class="text-xs text-red-400 hover:text-red-600 font-bold px-1" style="display:none;" onclick="deleteGame(3)">❌</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-// ...其餘遊戲邏輯、存檔、讀檔、刪除完全照原本寫法
+<script>
+/**
+ * === Game Logic ===
+ */
+const DATA_SDK_URL = "https://script.google.com/macros/s/AKfycbzA7IxWFGLPAaloaMiZjTvr_RXbJAEGe1iXLvp8V95Tqg1_ASxCMQYtkIlfz-49zNYl/exec"; // 換成你的 Apps Script URL
+
+let currentScene = 'start';
+let visitedScenes = new Set();
+let unlockedEndings = new Set();
+let saveSlots = new Map();
+let isLoading = false;
+
+// 場景資料
+const scenes = {
+  start: {
+    text: "🍑 你是一顆平平無奇的水蜜桃，今天一樣在廚房的水果籃裡當安靜的美女子。突然天外一聲驚雷響⚡，這個家的小主人突然開始大喊「我要吃水蜜桃！！」完蛋了，現在水果籃裡只剩你這顆桃，再不逃，桃命不保。\n\n📋 任務發達：逃出水果籃\n\n顯然，一顆桃是不會走路的，你該怎麼從水果籃逃出呢？",
+    choices: [
+      { text: "✨ 散發桃的魅力，讓小貓把你叼走", next: "cat_charm" },
+      { text: "🍌 讓隔壁香蕉當誘餌，讓小貓撞翻水果籃", next: "banana_bait" }
+    ]
+  },
+  cat_charm: {
+    text: "😻 你努力散發出誘人的桃香，小貓真的被吸引過來了！牠張開嘴巴，露出尖銳的牙齒...",
+    ending: { title: "😿 結局一：被貓吃掉", description: "太天真了，不會走路的你怎麼可能從貓的嘴裡逃生？小貓開心地把你當成零食吃掉了。下次要多動動腦筋啊！" }
+  },
+  banana_bait: {
+    text: "🍌 你使出渾身解數說服隔壁的香蕉幫忙，香蕉非常義氣地自願當誘餌！小貓看到香蕉後興奮地撲過來，砰的一聲！水果籃被撞翻了！你咕嚕咕嚕滾到窗戶邊。\n\n骨骼精奇的你突然發展出了可以移動的能力！太好了，這樣就可以更容易逃走了。\n\n📋 任務發達：逃出廚房",
+    choices: [
+      { text: "🪴 滾到窗戶旁邊，跳到盆栽裡", next: "window_escape" },
+      { text: "🚪 跳下桌子，從大門離開", next: "door_escape" }
+    ]
+  },
+  window_escape: {
+    text: "🌿 你努力滾到窗戶邊，用力一跳！成功落在柔軟的盆栽土裡！",
+    ending: { title: "🌱 結局二：迷茫的桃", description: "恭喜你逃出可怕的家，但是未來仍是一片迷茫。你在盆栽裡紮根，雖然未來一片縹緲，但沒關係，桃會努力活著！在陽光和雨水的滋養下，你開始了新的桃生。" }
+  },
+  door_escape: {
+    text: "💥 你勇敢地跳下桌子...砰！你重重地摔在地上，感覺整顆桃都散開了...",
+    ending: { title: "🥴 結局三：桃泥泥", description: "太有趣了，怎麼會選擇這個選項呢？你現在已經不是完整的桃了，變成桃泥泥了！雖然失去了桃的形態，但相信你還保有桃的香甜...吧？" }
+  }
+};
+
+// 以下 save/load/delete 與前面 HTML 範例相同，略
 </script>
 </body>
 </html>
